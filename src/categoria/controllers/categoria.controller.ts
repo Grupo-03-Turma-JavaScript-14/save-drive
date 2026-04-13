@@ -10,8 +10,8 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { CategoriaService } from './categoria.service';
-import { Categoria } from './entities/categoria.entity';
+import { CategoriaService } from '../services/categoria.service';
+import { Categoria } from '../entities/categoria.entity';
 
 @Controller('categorias')
 export class CategoriaController {
