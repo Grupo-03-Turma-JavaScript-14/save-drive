@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPip
 import { Usuario } from "../entities/usuario.entity";
 import { UsuarioService } from "../services/usuario.service";
 
-@Controller("/Usuarios")
+@Controller("/usuarios")
 export class UsuarioController{
     constructor(private readonly usuarioService: UsuarioService){}
 

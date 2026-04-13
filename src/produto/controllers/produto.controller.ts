@@ -14,7 +14,7 @@ export class ProdutoController {
         return this.produtoService.findAll();
     }
 
-    
+    @Get("/:id")
     @HttpCode(HttpStatus.OK)
     findById(@Param("id", ParseIntPipe) id: number): Promise<Produto> {
         return this.produtoService.findById(id);
