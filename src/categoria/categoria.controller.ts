@@ -11,8 +11,6 @@ import {
   Put,
 } from '@nestjs/common';
 import { CategoriaService } from './categoria.service';
-import { CreateCategoriaDto } from './dto/create-categoria.dto';
-import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 import { Categoria } from './entities/categoria.entity';
 
 @Controller('categorias')
@@ -21,8 +19,8 @@ export class CategoriaController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createCategoriaDto: CreateCategoriaDto): Promise<Categoria> {
-    return this.categoriaService.create(createCategoriaDto);
+  create(@Body() categoria: Categoria): Promise<Categoria> {
+    return this.categoriaService.create(categoria);
   }
 
   @Get()
@@ -41,9 +39,9 @@ export class CategoriaController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateCategoriaDto: UpdateCategoriaDto,
+    @Body() categoria: Categoria,
   ): Promise<Categoria> {
-    return this.categoriaService.update(id, updateCategoriaDto);
+    return this.categoriaService.update(id, categoria);
   }
 
   @Delete(':id')
