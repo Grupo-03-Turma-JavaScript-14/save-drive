@@ -8,6 +8,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { CategoriaModule } from './categoria/categoria.module';
 import { Usuario } from './usuario/entities/usuario.entity';
 import { Categoria } from './categoria/entities/categoria.entity';
+import { ContratoModule } from './contrato/contrato.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Categoria } from './categoria/entities/categoria.entity';
     ProdutoModule,
     UsuarioModule,
     CategoriaModule,
+    ContratoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

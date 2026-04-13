@@ -13,18 +13,15 @@ export class ContratoService {
         }
 
         const { valorVeiculo, idadeCondutor, usoProfissional, anoFabricacao, anosSemAcidente } = dados;
+        const anoAtual: number = new Date().getFullYear();
         
         let valorFinal = valorVeiculo * 0.05; 
-
-        if (idadeCondutor < 25) {
-            valorFinal *= 1.20;
-        }
 
         if (usoProfissional === true) {
             valorFinal *= 1.15;
         }
 
-        if (anoFabricacao < 2014) {
+        if (anoFabricacao < (anoAtual - 10)) {
             valorFinal += 500;
         }
 

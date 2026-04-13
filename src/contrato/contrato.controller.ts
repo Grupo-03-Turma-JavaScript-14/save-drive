@@ -5,12 +5,15 @@ import { ContratoService } from '../contrato/contrato.service';
 export class ContratoController {
   constructor(private readonly contratoService: ContratoService) {}
 
-  @Post('carro')
+@Post('carro')
 async calcular(@Body() body: any) {
-    const total = this.contratoService.calcularSeguroCarro(body);
-    return {
-        mensagem: "Cálculo de seguro Save-Drive realizado",
-        valorPremio: total
-    };
+  const total = this.contratoService.calcularSeguroCarro(body);
+
+  return {
+    mensagem: "Cálculo de seguro Save-Drive realizado",
+    valorFinal: total.valorSeguro,
+    opcoesPagamento: total.opcoesPagamento
+  };
 }
+
 }
