@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
-import { Categoria } from './entities/categoria.entity';
+import { Categoria } from '../entities/categoria.entity';
+
 
 @Injectable()
 export class CategoriaService {
@@ -15,12 +16,19 @@ export class CategoriaService {
   }
 
   async findAll(): Promise<Categoria[]> {
-    return await this.categoriaRepository.find();
+    return await this.categoriaRepository.find({
+            relations: {
+                produto: true
+            }
+        });
   }
 
   async findOne(id: number): Promise<Categoria> {
     const categoria = await this.categoriaRepository.findOne({
       where: { id },
+      relations: {
+                produto: true
+            }
     });
 
     if (!categoria) {

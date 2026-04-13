@@ -1,5 +1,6 @@
 import { IsNotEmpty } from "class-validator";
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm"
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm"
+import { Produto } from "../../produto/entities/produto.entity";
 
 @Entity ({name: "tb_usuarios"})
 export class Usuario {
@@ -25,4 +26,8 @@ export class Usuario {
     @IsNotEmpty()
     @Column ({length: 2, nullable: false})
     estado!: string
+
+    @OneToMany(() => Produto, (produto) => produto.usuario)
+    produto!: Produto[]
+
 }
