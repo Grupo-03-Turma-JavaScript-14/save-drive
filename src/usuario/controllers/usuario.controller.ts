@@ -1,89 +1,47 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { Usuario } from '../entities/usuario.entity';
+import { UsuarioService } from '../services/usuario.service';
 
-@Injectable()
+@Controller('/usuarios')
 export class UsuarioController {
-  constructor(
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
-  ) {}
+  constructor(private readonly usuarioService: UsuarioService) {}
 
-  async findAll(): Promise<Usuario[]> {
-    return await this.usuarioRepository.find({
-      relations: {
-        contratos: {
-          produto: true,
-          categoria: true,
-        },
-      },
-    });
+  @Get()
+  findAll() {
+    return this.usuarioService.findAll();
   }
 
-  async findById(id: number): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-      relations: {
-        contratos: {
-          produto: true,
-          categoria: true,
-        },
-      },
-    });
-
-    if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado.');
-    }
-
-    return usuario;
+  @Get('/nome/:nome')
+  findAllByNome(@Param('nome') nome: string) {
+    return this.usuarioService.findAllByNome(nome);
   }
 
-  async findByEmail(email: string): Promise<Usuario | null> {
-    return await this.usuarioRepository.findOne({
-      where: { email },
-      relations: {
-        contratos: {
-          produto: true,
-          categoria: true,
-        },
-      },
-    });
+  @Get('/:id')
+  findById(@Param('id', ParseIntPipe) id: number) {
+    return this.usuarioService.findById(id);
   }
 
-  async findAllByNome(nome: string): Promise<Usuario[]> {
-    return await this.usuarioRepository.find({
-      where: {
-        nome: ILike(`%${nome}%`),
-      },
-      relations: {
-        contratos: {
-          produto: true,
-          categoria: true,
-        },
-      },
-    });
+  @Post()
+  create(@Body() usuario: Usuario) {
+    return this.usuarioService.create(usuario);
   }
 
-  async create(usuario: Usuario): Promise<Usuario> {
-    return await this.usuarioRepository.save(usuario);
+  @Put()
+  update(@Body() usuario: Usuario) {
+    return this.usuarioService.update(usuario);
   }
 
-  async update(usuario: Usuario): Promise<Usuario> {
-    const usuarioExistente = await this.findById(usuario.id);
-
-    const usuarioAtualizado = this.usuarioRepository.merge(
-      usuarioExistente,
-      usuario,
-    );
-
-    return await this.usuarioRepository.save(usuarioAtualizado);
-  }
-
-  async delete(id: number): Promise<{ message: string }> {
-    const usuario = await this.findById(id);
-    await this.usuarioRepository.remove(usuario);
-
-    return { message: 'Usuário deletado com sucesso.' };
+  @Delete('/:id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.usuarioService.delete(id);
   }
 }

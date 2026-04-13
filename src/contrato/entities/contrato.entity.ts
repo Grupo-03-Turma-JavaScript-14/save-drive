@@ -1,8 +1,10 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Produto } from '../../produto/entities/produto.entity';
 import { Categoria } from '../../categoria/entities/categoria.entity';

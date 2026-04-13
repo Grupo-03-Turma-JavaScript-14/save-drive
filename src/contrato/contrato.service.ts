@@ -29,7 +29,7 @@ export class ContratoService {
   ) {}
 
   async create(createContratoDto: CreateContratoDto): Promise<Contrato> {
-    const { produtoId, categoriaId, usuarioId, ano, data } = createContratoDto;
+    const { produtoId, categoriaId, usuarioId, data } = createContratoDto;
 
     const produto = await this.produtoRepository.findOne({
       where: { id: produtoId },
@@ -63,8 +63,9 @@ export class ContratoService {
     }
 
     const anoAtual = dataContrato.getFullYear();
+    const anoVeiculo = produto.ano;
 
-    if (ano > anoAtual) {
+    if (anoVeiculo > anoAtual) {
       throw new BadRequestException(
         'O ano do veículo não pode ser maior que o ano da data do contrato.',
       );
@@ -76,11 +77,11 @@ export class ContratoService {
       throw new BadRequestException('O valor base do produto é inválido.');
     }
 
-    const idadeVeiculo = anoAtual - ano;
+    const idadeVeiculo = anoAtual - anoVeiculo;
 
     let valorContrato = valorBase;
 
-    if (idadeVeiculo > 10) {
+    if (idadeVeiculo >= 10) {
       valorContrato = valorBase * 0.8;
     }
 
@@ -88,7 +89,7 @@ export class ContratoService {
       produto,
       categoria,
       usuario,
-      ano,
+      ano: anoVeiculo,
       data,
       valorContrato: Number(valorContrato.toFixed(2)),
     });
@@ -114,6 +115,7 @@ export class ContratoService {
 
   async delete(id: number): Promise<{ message: string }> {
     const contrato = await this.findOne(id);
+
     await this.contratoRepository.remove(contrato);
 
     return { message: 'Contrato deletado com sucesso.' };

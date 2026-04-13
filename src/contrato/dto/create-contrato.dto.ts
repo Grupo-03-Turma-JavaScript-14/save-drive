@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, Min } from 'class-validator';
+import { IsDateString, IsInt } from 'class-validator';
 
 export class CreateContratoDto {
   @IsInt()
@@ -9,10 +9,6 @@ export class CreateContratoDto {
 
   @IsInt()
   usuarioId!: number;
-
-  @IsInt()
-  @Min(1900)
-  ano!: number;
 
   @IsDateString()
   data!: string;

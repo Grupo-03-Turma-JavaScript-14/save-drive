@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 
 @Injectable()
@@ -39,9 +39,11 @@ export class UsuarioService {
     return usuario;
   }
 
-  async findByEmail(email: string): Promise<Usuario | null> {
-    return await this.usuarioRepository.findOne({
-      where: { email },
+  async findAllByNome(nome: string): Promise<Usuario[]> {
+    return await this.usuarioRepository.find({
+      where: {
+        nome: ILike(`%${nome}%`),
+      },
       relations: {
         contratos: {
           produto: true,
@@ -49,5 +51,22 @@ export class UsuarioService {
         },
       },
     });
+  }
+
+  async create(usuario: Usuario): Promise<Usuario> {
+    return await this.usuarioRepository.save(usuario);
+  }
+
+  async update(usuario: Usuario): Promise<Usuario> {
+    await this.findById(usuario.id);
+
+    return await this.usuarioRepository.save(usuario);
+  }
+
+  async delete(id: number): Promise<{ message: string }> {
+    const usuario = await this.findById(id);
+    await this.usuarioRepository.remove(usuario);
+
+    return { message: 'Usuário deletado com sucesso.' };
   }
 }
