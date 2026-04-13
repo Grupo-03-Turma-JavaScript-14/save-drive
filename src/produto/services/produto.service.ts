@@ -2,31 +2,30 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DeleteResult, Repository } from "typeorm";
 import { Produto } from "../entities/produto.entity";
-import { CategoriaService } from "../../categoria/services/categoria.service";
+import { Categoria } from "../../categoria/entities/categoria.entity";
 
 @Injectable()
 export class ProdutoService {
     constructor(
         @InjectRepository(Produto)
         private produtoRepository: Repository<Produto>,
-        private categoriaService: CategoriaService
+
+        @InjectRepository(Categoria)
+        private categoriaRepository: Repository<Categoria>
     ) {}
 
     async findAll(): Promise<Produto[]> {
         return await this.produtoRepository.find({
-            relations:{
-                usuario: true,
+            relations: {
                 categoria: true
             }
         });
     }
 
-   
     async findById(id: number): Promise<Produto> {
         const produto = await this.produtoRepository.findOne({
             where: { id },
-             relations:{
-                usuario: true,
+            relations: {
                 categoria: true
             }
         });
@@ -38,41 +37,34 @@ export class ProdutoService {
         return produto;
     }
 
-  
     async create(produto: Produto): Promise<Produto> {
-        if (produto.categoria != null) {
-           
-            let categoria = await this.categoriaService.findOne(produto.categoria.id)
- 
-            if (!categoria)
-                throw new HttpException('Categoria não encontrada!', HttpStatus.NOT_FOUND);
- 
-              return await this.produtoRepository.save(produto);
-        }else{
-            throw new HttpException('Categoria nao pode ser nula!', HttpStatus.NOT_FOUND);
+        const categoria = await this.categoriaRepository.findOne({
+            where: { id: produto.categoria.id }
+        });
+
+        if (!categoria) {
+            throw new HttpException("Categoria não encontrada!", HttpStatus.NOT_FOUND);
         }
-   
+
+        produto.categoria = categoria;
+
+        return await this.produtoRepository.save(produto);
     }
 
- 
     async update(produto: Produto): Promise<Produto> {
-        let buscaProduto: Produto = await this.findById(produto.id);
- 
-        if (!buscaProduto || !produto.id)
-            throw new HttpException('Produto não encontrada!', HttpStatus.NOT_FOUND);
- 
-        if (produto.categoria){
-           
-            let categoria = await this.categoriaService.findOne(produto.categoria.id)
-               
-            if (!categoria)
-                throw new HttpException('Categoria não encontrada!', HttpStatus.NOT_FOUND);
-               
-            return await this.produtoRepository.save(produto);
-   
-        }else{
-            throw new HttpException('Categoria nao pode ser nula!', HttpStatus.NOT_FOUND);
+        await this.findById(produto.id);
+
+        const categoria = await this.categoriaRepository.findOne({
+            where: { id: produto.categoria.id }
+        });
+
+        if (!categoria) {
+            throw new HttpException("Categoria não encontrada!", HttpStatus.NOT_FOUND);
         }
+
+        produto.categoria = categoria;
+
+        return await this.produtoRepository.save(produto);
     }
 
     async delete(id: number): Promise<DeleteResult> {

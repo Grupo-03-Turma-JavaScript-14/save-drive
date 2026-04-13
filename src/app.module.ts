@@ -3,12 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Produto } from './produto/entities/produto.entity';
-import { ProdutoModule } from './produto/produto.module';
-import { UsuarioModule } from './usuario/usuario.module';
-import { CategoriaModule } from './categoria/categoria.module';
-import { Usuario } from './usuario/entities/usuario.entity';
 import { Categoria } from './categoria/entities/categoria.entity';
-import { ContratoModule } from './contrato/contrato.module';
+import { ProdutoModule } from './produto/produto.module';
+import { CategoriaModule } from './categoria/categoria.module';
 
 @Module({
   imports: [
@@ -19,13 +16,11 @@ import { ContratoModule } from './contrato/contrato.module';
       username: 'root',
       password: 'root',
       database: 'db_savedrive',
-      entities: [Produto, Usuario, Categoria],
+      entities: [Produto, Categoria],
       synchronize: true,
     }),
     ProdutoModule,
-    UsuarioModule,
     CategoriaModule,
-    ContratoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,15 +9,10 @@ export class Categoria {
   @Column({ length: 100, nullable: false })
   tipoPlano!: string;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: false })
-  valorBase!: number;
-
   @Column({ length: 100, nullable: false })
   tempoRevisao!: string;
 
-  @Column({ length: 100, nullable: false })
-  periodoEspera!: string;
-
   @OneToMany(() => Produto, (produto) => produto.categoria)
-      produto!: Produto[]
+  produto!: Produto[]
+  
 }
