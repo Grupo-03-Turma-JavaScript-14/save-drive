@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Produto } from './produto/entities/produto.entity';
-import { Categoria } from './categoria/entities/categoria.entity';
+
 import { ProdutoModule } from './produto/produto.module';
 import { CategoriaModule } from './categoria/categoria.module';
+import { ContratoModule } from './contrato/contrato.module';
+import { UsuarioModule } from './usuario/usuario.module';
 
 @Module({
   imports: [
@@ -16,11 +17,13 @@ import { CategoriaModule } from './categoria/categoria.module';
       username: 'root',
       password: 'root',
       database: 'db_savedrive',
-      entities: [Produto, Categoria],
+      autoLoadEntities: true,
       synchronize: true,
     }),
     ProdutoModule,
     CategoriaModule,
+    ContratoModule,
+    UsuarioModule,
   ],
   controllers: [AppController],
   providers: [AppService],

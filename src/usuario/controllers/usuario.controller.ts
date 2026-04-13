@@ -1,43 +1,89 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
-import { Usuario } from "../entities/usuario.entity";
-import { UsuarioService } from "../services/usuario.service";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
+import { Usuario } from '../entities/usuario.entity';
 
-@Controller("/usuarios")
-export class UsuarioController{
-    constructor(private readonly usuarioService: UsuarioService){}
+@Injectable()
+export class UsuarioController {
+  constructor(
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
+  ) {}
 
-    @Get()
-    @HttpCode(HttpStatus.OK)
-    findAll(): Promise <Usuario[]> {
-        return this.usuarioService.findAll();
+  async findAll(): Promise<Usuario[]> {
+    return await this.usuarioRepository.find({
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+  }
+
+  async findById(id: number): Promise<Usuario> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado.');
     }
 
-    @Get('/:id')
-    @HttpCode(HttpStatus.OK)
-    findById(@Param("id", ParseIntPipe) id: number): Promise<Usuario> {
-        return this.usuarioService.findById(id);
-    }
+    return usuario;
+  }
 
-    @Get('/nome/:nome')
-    @HttpCode(HttpStatus.OK)
-    findAllByNome (@Param('nome') nome: string): Promise <Usuario[]> {
-        return this.usuarioService.findAllByNome(nome);
-    }
-    @Post()
-    @HttpCode(HttpStatus.CREATED)
-    create (@Body() usuario: Usuario): Promise <Usuario> {
-        return this.usuarioService.create(usuario)
-    }
+  async findByEmail(email: string): Promise<Usuario | null> {
+    return await this.usuarioRepository.findOne({
+      where: { email },
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+  }
 
-    @Put()
-    @HttpCode(HttpStatus.OK)
-    update(@Body()usuario: Usuario): Promise<Usuario> {
-        return this.usuarioService.update (usuario)
-    }
-    @Delete('/:id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    delete(@Param('id', ParseIntPipe) id: number) {
-        return this.usuarioService.delete(id);
-    }
+  async findAllByNome(nome: string): Promise<Usuario[]> {
+    return await this.usuarioRepository.find({
+      where: {
+        nome: ILike(`%${nome}%`),
+      },
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+  }
 
+  async create(usuario: Usuario): Promise<Usuario> {
+    return await this.usuarioRepository.save(usuario);
+  }
+
+  async update(usuario: Usuario): Promise<Usuario> {
+    const usuarioExistente = await this.findById(usuario.id);
+
+    const usuarioAtualizado = this.usuarioRepository.merge(
+      usuarioExistente,
+      usuario,
+    );
+
+    return await this.usuarioRepository.save(usuarioAtualizado);
+  }
+
+  async delete(id: number): Promise<{ message: string }> {
+    const usuario = await this.findById(id);
+    await this.usuarioRepository.remove(usuario);
+
+    return { message: 'Usuário deletado com sucesso.' };
+  }
 }

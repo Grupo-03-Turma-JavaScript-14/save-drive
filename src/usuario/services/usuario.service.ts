@@ -1,57 +1,53 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ILike, Repository } from "typeorm";
-import { Usuario } from "../entities/usuario.entity";
-import { DeleteResult } from "typeorm";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Usuario } from '../entities/usuario.entity';
 
-@Injectable ()
+@Injectable()
 export class UsuarioService {
-    constructor(
-        @InjectRepository(Usuario)
-        private usuarioRepository: Repository<Usuario>
-    ) {}
+  constructor(
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
+  ) {}
 
-    async findAll (): Promise<Usuario[]> {
-        return await this.usuarioRepository.find({
-            relations:{
-                produto: true
-            }
-        });
-    }
-    async findById(id: number): Promise <Usuario> {
-        const usuario = await this.usuarioRepository.findOne ({
-            where: {
-                id
-            },
-            relations:{
-                produto: true
-            }
-        })
+  async findAll(): Promise<Usuario[]> {
+    return await this.usuarioRepository.find({
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+  }
 
-        if(!usuario)
-            throw new HttpException ("Usuario não encontrado", HttpStatus.NOT_FOUND);
+  async findById(id: number): Promise<Usuario> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
 
-        return usuario;
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado.');
     }
-    async findAllByNome(nome: string): Promise<Usuario[]> {
-        return await this.usuarioRepository.find({
-            where: {
-                nome: ILike(`%${nome}%`)
-            },
-            relations:{
-                produto: true
-            }
-        })
-    }
-    async create (usuario: Usuario): Promise<Usuario> {
-        return await this.usuarioRepository.save(usuario);
-    }
-    async update(usuario: Usuario): Promise<Usuario>{
-        await this.findById(usuario.id)
-        return await this.usuarioRepository.save(usuario)
-    }
-    async delete(id: number): Promise<DeleteResult>{
-        await this.findById(id)
-        return await this.usuarioRepository.delete(id)
-    }
+
+    return usuario;
+  }
+
+  async findByEmail(email: string): Promise<Usuario | null> {
+    return await this.usuarioRepository.findOne({
+      where: { email },
+      relations: {
+        contratos: {
+          produto: true,
+          categoria: true,
+        },
+      },
+    });
+  }
 }

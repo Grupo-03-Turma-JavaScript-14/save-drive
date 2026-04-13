@@ -1,48 +1,121 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { Contrato } from './entities/contrato.entity';
+import { CreateContratoDto } from './dto/create-contrato.dto';
+import { Produto } from '../produto/entities/produto.entity';
+import { Categoria } from '../categoria/entities/categoria.entity';
+import { Usuario } from '../usuario/entities/usuario.entity';
 
 @Injectable()
 export class ContratoService {
-    
-    calcularSeguroCarro(dados: any) {
-        if (dados.valorVeiculo < 5000) {
-            throw new BadRequestException('Não realizamos seguros para veículos com valor inferior a R$ 5.000,00');
-        }
+  constructor(
+    @InjectRepository(Contrato)
+    private readonly contratoRepository: Repository<Contrato>,
 
-        if (dados.idadeCondutor < 18) {
-            throw new BadRequestException('O condutor deve ser maior de idade.');
-        }
+    @InjectRepository(Produto)
+    private readonly produtoRepository: Repository<Produto>,
 
-        const { valorVeiculo, idadeCondutor, usoProfissional, anoFabricacao, anosSemAcidente } = dados;
-        const anoAtual: number = new Date().getFullYear();
-        
-        let valorFinal = valorVeiculo * 0.05; 
+    @InjectRepository(Categoria)
+    private readonly categoriaRepository: Repository<Categoria>,
 
-        if (usoProfissional === true) {
-            valorFinal *= 1.15;
-        }
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
+  ) {}
 
-        if (anoFabricacao < (anoAtual - 10)) {
-            valorFinal += 500;
-        }
+  async create(createContratoDto: CreateContratoDto): Promise<Contrato> {
+    const { produtoId, categoriaId, usuarioId, ano, data } = createContratoDto;
 
-        if (anosSemAcidente > 0) {
-            const descontoBonus = Math.min(anosSemAcidente * 0.05, 0.25);
-            valorFinal *= (1 - descontoBonus);
-        }
+    const produto = await this.produtoRepository.findOne({
+      where: { id: produtoId },
+      relations: ['categoria'],
+    });
 
-        const totalCalculado = Number(valorFinal.toFixed(2));
-
-        return {
-            valorSeguro: totalCalculado,
-            opcoesPagamento: this.gerarOpcoesParcelamento(totalCalculado)
-        };
+    if (!produto) {
+      throw new NotFoundException('Produto não encontrado.');
     }
 
-    gerarOpcoesParcelamento(valorTotal: number) {
-        return {
-            aVista: Number((valorTotal * 0.90).toFixed(2)),
-            parcelado6x: Number((valorTotal / 6).toFixed(2)),
-            parcelado12x: Number(((valorTotal * 1.10) / 12).toFixed(2)), 
-        };
+    const categoria = await this.categoriaRepository.findOne({
+      where: { id: categoriaId },
+    });
+
+    if (!categoria) {
+      throw new NotFoundException('Categoria não encontrada.');
     }
+
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id: usuarioId },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const dataContrato = new Date(data);
+
+    if (isNaN(dataContrato.getTime())) {
+      throw new BadRequestException('Data inválida.');
+    }
+
+    const anoAtual = dataContrato.getFullYear();
+
+    if (ano > anoAtual) {
+      throw new BadRequestException(
+        'O ano do veículo não pode ser maior que o ano da data do contrato.',
+      );
+    }
+
+    const valorBase = Number(produto.valorBase);
+
+    if (isNaN(valorBase)) {
+      throw new BadRequestException('O valor base do produto é inválido.');
+    }
+
+    const idadeVeiculo = anoAtual - ano;
+
+    let valorContrato = valorBase;
+
+    if (idadeVeiculo > 10) {
+      valorContrato = valorBase * 0.8;
+    }
+
+    const contrato = this.contratoRepository.create({
+      produto,
+      categoria,
+      usuario,
+      ano,
+      data,
+      valorContrato: Number(valorContrato.toFixed(2)),
+    });
+
+    return await this.contratoRepository.save(contrato);
+  }
+
+  async findAll(): Promise<Contrato[]> {
+    return await this.contratoRepository.find();
+  }
+
+  async findOne(id: number): Promise<Contrato> {
+    const contrato = await this.contratoRepository.findOne({
+      where: { id },
+    });
+
+    if (!contrato) {
+      throw new NotFoundException('Contrato não encontrado.');
+    }
+
+    return contrato;
+  }
+
+  async delete(id: number): Promise<{ message: string }> {
+    const contrato = await this.findOne(id);
+    await this.contratoRepository.remove(contrato);
+
+    return { message: 'Contrato deletado com sucesso.' };
+  }
 }

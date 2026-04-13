@@ -1,33 +1,20 @@
-import { IsNotEmpty } from "class-validator";
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm"
-import { Produto } from "../../produto/entities/produto.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Contrato } from '../../contrato/entities/contrato.entity';
 
-@Entity ({name: "tb_usuarios"})
+@Entity({ name: 'tb_usuarios' })
 export class Usuario {
-    @PrimaryGeneratedColumn()
-    id!: number
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @IsNotEmpty()
-    @Column ({length: 100, nullable: false})
-    nome!: string
+  @Column({ length: 100, nullable: false })
+  nome!: string;
 
-    @IsNotEmpty()
-    @Column ({length: 100, unique: true, nullable: false})
-    email!: string
+  @Column({ length: 100, nullable: false, unique: true })
+  email!: string;
 
-    @IsNotEmpty()
-    @Column ({length: 14, unique: true, nullable: false})
-    cpf!: string
+  @Column({ length: 255, nullable: false })
+  senha!: string;
 
-    @IsNotEmpty()
-    @Column ({length: 100, nullable: false})
-    cidade!: string
-
-    @IsNotEmpty()
-    @Column ({length: 2, nullable: false})
-    estado!: string
-
-    @OneToMany(() => Produto, (produto) => produto.usuario)
-    produto!: Produto[]
-
+  @OneToMany(() => Contrato, (contrato) => contrato.usuario)
+  contratos!: Contrato[];
 }
