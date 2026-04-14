@@ -1,4 +1,4 @@
-import { IsDateString, IsInt } from 'class-validator';
+import { IsInt } from 'class-validator';
 
 export class CreateContratoDto {
   @IsInt()
@@ -9,7 +9,4 @@ export class CreateContratoDto {
 
   @IsInt()
   usuarioId!: number;
-
-  @IsDateString()
-  data!: string;
 }

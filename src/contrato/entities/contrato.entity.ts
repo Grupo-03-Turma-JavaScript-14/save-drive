@@ -4,7 +4,6 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Produto } from '../../produto/entities/produto.entity';
 import { Categoria } from '../../categoria/entities/categoria.entity';
@@ -31,8 +30,8 @@ export class Contrato {
   @Column({ type: 'int', nullable: false })
   ano!: number;
 
-  @Column({ type: 'date', nullable: false })
-  data!: string;
+  @CreateDateColumn({ type: 'timestamp' })
+  data!: Date;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: false })
   valorContrato!: number;

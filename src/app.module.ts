@@ -15,7 +15,7 @@ import { UsuarioModule } from './usuario/usuario.module';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: 'root',
+      password: 'NovaSenha123!',
       database: 'db_savedrive',
       autoLoadEntities: true,
       synchronize: true,

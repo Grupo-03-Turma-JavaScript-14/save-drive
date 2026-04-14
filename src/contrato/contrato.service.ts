@@ -29,7 +29,7 @@ export class ContratoService {
   ) {}
 
   async create(createContratoDto: CreateContratoDto): Promise<Contrato> {
-    const { produtoId, categoriaId, usuarioId, data } = createContratoDto;
+    const { produtoId, categoriaId, usuarioId } = createContratoDto;
 
     const produto = await this.produtoRepository.findOne({
       where: { id: produtoId },
@@ -56,18 +56,18 @@ export class ContratoService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    const dataContrato = new Date(data);
-
-    if (isNaN(dataContrato.getTime())) {
-      throw new BadRequestException('Data inválida.');
+    if (produto.categoria.id !== categoria.id) {
+      throw new BadRequestException(
+        'A categoria informada não corresponde à categoria do produto.',
+      );
     }
 
-    const anoAtual = dataContrato.getFullYear();
+    const anoAtual = new Date().getFullYear();
     const anoVeiculo = produto.ano;
 
     if (anoVeiculo > anoAtual) {
       throw new BadRequestException(
-        'O ano do veículo não pode ser maior que o ano da data do contrato.',
+        'O ano do veículo não pode ser maior que o ano atual.',
       );
     }
 
@@ -90,7 +90,6 @@ export class ContratoService {
       categoria,
       usuario,
       ano: anoVeiculo,
-      data,
       valorContrato: Number(valorContrato.toFixed(2)),
     });
 
@@ -98,12 +97,15 @@ export class ContratoService {
   }
 
   async findAll(): Promise<Contrato[]> {
-    return await this.contratoRepository.find();
+    return await this.contratoRepository.find({
+      relations: ['produto', 'categoria', 'usuario'],
+    });
   }
 
   async findOne(id: number): Promise<Contrato> {
     const contrato = await this.contratoRepository.findOne({
       where: { id },
+      relations: ['produto', 'categoria', 'usuario'],
     });
 
     if (!contrato) {
